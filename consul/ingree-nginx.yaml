@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: consul-ui
+  namespace: public-service
+spec:
+  rules:
+  - host: consul.hrfax.example
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: consul-ui
+          servicePort: 80

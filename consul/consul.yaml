@@ -1,0 +1,145 @@
+apiVersion: v1
+data:
+  Acl.json: |-
+    {"acl" : {
+     "enabled":true,
+     "default_policy":"deny",
+     "enable_token_persistence":true,
+     "tokens":{
+       "master":"8dc1eb67-1f5f-4e10-ad9d-5e58b047647c",
+       "agent":"8dc1eb67-1f5f-4e10-ad9d-5e58b047647c"
+                    }
+            },
+     "connect": {
+        "ca_provider": "consul",
+        "ca_config": {
+          "rotation_period": "90h",
+          "leaf_cert_ttl": "1h",
+          "csr_max_per_second": 0,
+          "csr_max_concurrent": 0
+        },
+        "enabled": true
+     },
+    "limits": {
+      "http_max_conns_per_client": 1000
+    }
+     }
+kind: ConfigMap
+metadata:
+  name: consul-acl-config
+  namespace: nbbp-yc-test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: consul
+  name: consul-ui
+  namespace: nbbp-yc-test
+spec:
+  ports:
+  - name: consul-port
+    port: 80
+    protocol: TCP
+    targetPort: 8500
+  selector:
+    app: consul
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: consul
+  namespace: nbbp-yc-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consul
+  serviceName: consul
+  template:
+    metadata:
+      labels:
+        app: consul
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -ec
+        - |
+          exec /bin/consul agent \
+           -server \
+           -ui \
+           -advertise="$(PODIP)" \
+           -bind=0.0.0.0 \
+           -client=0.0.0.0 \
+           -bootstrap-expect=1 \
+           -data-dir=/consul/data \
+           -domain=cluster.local \
+           -retry-join=consul-0.consul.$(NAMESPACE).svc.cluster.local \
+           -disable-host-node-id \
+           -datacenter=hrfax \
+           -enable-script-checks=true \
+           -config-file=/consul/config/Acl.json \
+        env:
+        - name: PODIP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: registry.hrfax.net:5000/consul:1.9.7
+        imagePullPolicy: Always
+        name: consul
+        ports:
+        - containerPort: 8500
+          name: ui-port
+          protocol: TCP
+        - containerPort: 8400
+          name: alt-port
+          protocol: TCP
+        - containerPort: 53
+          name: udp-port
+          protocol: TCP
+        - containerPort: 8443
+          name: https-port
+          protocol: TCP
+        - containerPort: 8080
+          name: http-port
+          protocol: TCP
+        - containerPort: 8301
+          name: serflan
+          protocol: TCP
+        - containerPort: 8302
+          name: serfwan
+          protocol: TCP
+        - containerPort: 8600
+          name: consuldns
+          protocol: TCP
+        - containerPort: 8300
+          name: server
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /consul/config
+          name: config
+        - mountPath: /consul/data
+          name: data
+      volumes:
+      - configMap:
+          name: consul-acl-config
+        name: config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      storageClassName: "new-nfs-storage"
+      resources:
+        requests:
+          storage: 10Gi
+
+

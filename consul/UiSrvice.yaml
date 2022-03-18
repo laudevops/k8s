@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: consul-ui
+  namespace: public-service
+  labels:
+    app: consul
+spec:
+  selector:
+     app: consul
+  ports:
+   - name: consul-port
+     protocol: TCP
+     port: 80
+     targetPort: 8500
+  type: ClusterIP
