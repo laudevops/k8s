@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: elkstack
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: logstash-conf
+      - name: patterns
+        configMap:
+          name: patterns-conf
+      containers:
+        - name: logstash
+          #image: docker.elastic.co/elasticsearch/logstash:7.3.0
+          image: logstash:7.3.0
+          args: [
+            "-f","/usr/share/logstash/pipeline/logstash.conf"
+          ]
+#          command:
+#          - "sleep"
+#          - "12000"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LOGSTASH_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+          - name: config
+            mountPath: "/usr/share/logstash/pipeline/logstash.conf"
+            readOnly: true
+            subPath: logstash.conf
+          - name: patterns
+            mountPath: "/usr/share/logstash/pipeline/patterns.conf"
+            readOnly: true
+            subPath: patterns.conf
+          resources:
+            requests:
+              cpu: 1
+              memory: 2048Mi
+            limits:
+              cpu: 2
+              memory: 3072Mi
+          #readinessProbe:
+          #  tcpSocket:
+          #    port: 8080
+          #  initialDelaySeconds: 5
+          #  periodSeconds: 10
+          #livenessProbe:
+          #  tcpSocket:
+          #    port: 8080
+          #  initialDelaySeconds: 15
+          #  periodSeconds: 20
+
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: logstash-hpa
+  namespace: elkstack
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1beta2
+    kind: Deployment
+    name: logstash
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 90
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+  namespace: elkstack
+spec:
+  selector:
+    app: logstash
+  type: ClusterIP
+  ports:
+    - name: 'port'
+      protocol: TCP
+      port: 8080
+      targetPort: 8080

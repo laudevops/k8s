@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pv-elk-kibana
+  namespace: elkstack
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs-storage"
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi

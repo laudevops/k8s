@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: face-sign-client-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: face-sign-client
+  template:
+    metadata:
+      labels:
+        app: face-sign-client
+        tier: face-sign-client
+        track: stable
+    spec:
+      containers:
+        - name: face-sign-client
+          image: face-sign-client:2a98810
+          env:
+          - name: PARAMS
+            value: "-jar -XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/tmp/gc-1-1.log -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/dump-1-1.hprof /opt/app.jar  --spring.profiles.active=test    --spring.cloud.consul.host=192.168.0.78 --spring.cloud.consul.port=80 --spring.cloud.consul.discovery.acl-token=xxxxxxxxxxxxxxxx"
+        #  - name: JAVA_OPTS
+        #    value: "-Xmx780m -Xms780m"
+          ports:
+            - name: http
+              containerPort: 8001
+          livenessProbe:
+            initialDelaySeconds: 500 #延迟加载时间  表示从多少时间以后开始加载
+            periodSeconds: 10        #重试时间间隔
+            timeoutSeconds: 10      #超时时间设置
+            failureThreshold: 10    # 表示探针重试的次数
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: 1024Mi
+              cpu: "500m"
+            limits:
+              memory: 1024Mi
+              cpu: "501m"
+          volumeMounts:
+          - mountPath: /data/logs
+            name: logs
+        - name: promtail
+          #image: grafana/promtail:2.3.0
+          image: 192.168.0.40/lau/grafana-promtail:2.3.0-hrfax
+          imagePullPolicy: IfNotPresent
+          args: 
+          - -config.file=/etc/promtail/promtail.yaml
+          - -client.url=http://loki.logging:3100/loki/api/v1/push
+          - face-sign-client   ## 定义job名称
+          - /data/logs   ##收集日志路径
+          env: 
+          - name: HOSTNAME
+            valueFrom: 
+              fieldRef: 
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          volumeMounts:
+          - mountPath: /etc/promtail
+            name: config
+          - mountPath: /data/logs
+            name: logs
+            readOnly: true
+          ports:
+          - containerPort: 3101
+            name: http-metrics
+            protocol: TCP
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 0
+            runAsUser: 0
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 5
+            timeoutSeconds: 5
+      volumes:
+        - name: config
+          emptyDir:
+            medium: Memory
+        - emptyDir: {}
+          name: logs
+      imagePullSecrets:
+        - name: registry-secret

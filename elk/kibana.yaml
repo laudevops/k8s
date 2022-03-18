@@ -1,0 +1,89 @@
+---
+# setting ConfigMap
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kibana-conf
+  namespace: elkstack
+data:
+  kibana.yml: |
+    server.name: kibana
+    server.host: "0.0.0.0"
+    server.port: 5601
+    server.basePath: "/kibana"
+    server.rewriteBasePath: true
+    i18n.locale: "zh-CN"
+    map.tilemap.url: "http://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}"
+    map.tilemap.options.minZoom: "1"
+    map.tilemap.options.maxZoom: "10"
+    map.tilemap.options.attribution: "? [Elastic Maps Service](https://www.elastic.co/elastic-maps-service)"
+    elasticsearch.hosts: [ "http://elasticsearch-loadbalancer:9200" ]
+
+---
+
+# setting Depolyment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: elkstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          #image: docker.elastic.co/elasticsearch/kibana:7.3.0
+          image: kibana:7.3.0
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - name: config
+            mountPath: "/usr/share/kibana/config/kibana.yml"
+            subPath: kibana.yml
+          - name: kibana-data
+            mountPath: /usr/share/kibana/data
+          readinessProbe:
+            tcpSocket:
+              port: 5601
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 5601
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+      - name: config
+        configMap:
+          name: kibana-conf
+          items:
+            - key: kibana.yml
+              path: kibana.yml
+      - name: kibana-data
+        persistentVolumeClaim:
+          claimName: pv-elk-kibana
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: elkstack
+spec:
+  selector:
+    app: kibana
+  ports:
+    - name: http
+      port: 5601
+      protocol: TCP
+      targetPort: 5601
+      nodePort: 30002
+  sessionAffinity: None
+  type: NodePort
+  #type: ClusterIP

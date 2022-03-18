@@ -1,0 +1,68 @@
+---
+# setting ConfigMap
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: patterns-conf
+  namespace: elkstack
+data:
+  patterns.conf: 'JAVALOGMESSAGE_Multiline (.|\r|\n)*'
+
+---
+# setting ConfigMap
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: logstash-conf
+  namespace: elkstack
+data:
+  logstash.conf: |
+    input {
+        kafka  {
+            bootstrap_servers => "kafka:9092"
+            group_id => "SHM_ELK"
+            client_id => "${LOGSTASH_ID}"
+            topics => ["nginx","face-sign-manager"]
+            decorate_events => true
+            auto_offset_reset => "latest"
+            consumer_threads => 6
+            codec => "json"
+        }
+    }
+    filter {
+        if [app_type] == "shm_java" {
+            grok {
+                patterns_dir => ["/usr/share/logstash/pipeline/patterns.conf"]
+                match => { "message" => "%{DATA:day} %{DATA:time} %{DATA:level} %{DATA:className} \: %{GREEDYDATA:msg}" }
+            }
+            mutate {   
+                remove_field => [ "@version","message"]
+            }
+        }
+        if [app_type] == "shm_cpp" {
+            grok {
+                patterns_dir => ["/usr/share/logstash/pipeline/patterns.conf"]
+                match => { "message" => "\A%{LOGLEVEL:level} %{NUMBER:thread_id} %{TIMESTAMP_ISO8601:datetime} %{JAVALOGMESSAGE_Multiline:msg}" }
+            }
+            mutate {
+                remove_field => [ "@version","message"]
+            }
+        }
+        if [app_type] == "shm_nginx" {
+            grok {
+                patterns_dir => ["/usr/share/logstash/pipeline/patterns.conf"]
+                match => { "message" => '%{IPORHOST:client_ip} - (?:%{WORD:user_name}|-) \[%{HTTPDATE:timestamp}\] "%{WORD:request_action} %{DATA:request} HTTP/%{NUMBER:http_version}" %{NUMBER:status:int} %{NUMBER:body_sent:int} "(?:%{URI:referrer}|-)" "%{DATA:agent}" (?:%{NOTSPACE:http_x_forwarded_for}|-)' }
+            }
+            mutate {
+                remove_field => [ "@version","message"]
+            }
+        }
+    }
+    output {
+       elasticsearch {
+           hosts => ["elasticsearch-loadbalancer:9200"]
+           index => "%{[app_name]}-%{+YYYY.MM.dd}"
+       }
+    }

@@ -1,0 +1,92 @@
+第一步：安装helm3
+1，下载helm3
+wget  https://get.helm.sh/helm-v3.3.1-linux-amd64.tar.gz
+
+2，安装
+tar -zxvf helm-v3.3.1-linux-amd64.tar.gz
+mv linux-amd64/helm /usr/local/bin/
+
+3，添加常用仓库
+helm repo add harbor https://helm.goharbor.io
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+helm repo add aliyun https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+helm repo add azure http://mirror.azure.cn/kubernetes/charts
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
+
+第二步：安装harbor
+
+1，下载
+helm pull harbor/harbor
+tar fx harbor-1.7.3.tgz
+
+2.修改配置文件
+expose:
+  type: nodePort   #改为nodeport
+
+  tls:
+    # 这里使用http，修改为false
+    enabled: false
+
+externalURL: http://192.168.0.78:57111    ##访问地址
+
+  nodePort:
+    name: harbor
+    ports:
+      http:
+        port: 80
+        nodePort: 57111
+      https:
+        port: 443
+        nodePort: 57112
+      notary:
+        port: 4443
+        nodePort: 57113
+
+ 
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      existingClaim: ""
+      storageClass: "nfs-storage"  ##storageClass
+      subPath: "lau-registry"  ##  pvc子路径
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    chartmuseum:
+      existingClaim: ""
+      storageClass: "nfs-storage"
+      subPath: "lau-chartmuseum"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    jobservice:
+      existingClaim: ""
+      storageClass: "nfs-storage"
+      subPath: "lau-jobservice"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    database:
+      existingClaim: ""
+      storageClass: "nfs-storage"
+      subPath: "lau-database"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    redis:
+      existingClaim: ""
+      storageClass: "nfs-storage"
+      subPath: "lau-redis"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    trivy:
+      existingClaim: ""
+      storageClass: "nfs-storage"
+      subPath: "lau-trivy"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+
+# 安装
+helm install my-harbor harbor/ -n lau
+
+如果需要修改values.yaml，更改完values.yaml后执行此命令
+helm upgrade  my-harbor harbor/   -n lau
