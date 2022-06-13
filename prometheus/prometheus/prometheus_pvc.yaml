@@ -1,0 +1,29 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name:  prometheus-data
+  namespace: zhangjt
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "new-nfs-storage"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: grafana-data
+  namespace: zhangjt
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "new-nfs-storage"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi
+---

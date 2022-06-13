@@ -1,0 +1,35 @@
+kind: Service
+apiVersion: v1
+metadata: 
+  name: jenkins-svc
+  namespace: zhangjt
+spec:
+  ports:
+    - name: jenkins-svc-8080-8080
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: jenkins-svc-50000-50000
+      port: 50000
+      protocol: TCP
+      targetPort: 50000
+  selector:
+    app: jenkins
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-nodeport
+  labels:
+    app: jenkins
+  namespace: zhangjt
+spec:
+  selector:
+    app: jenkins
+  type: NodePort
+  ports:
+  - name: "jenkins-8080"
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+    nodePort: 31105

@@ -1,0 +1,235 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: zhangjt
+  labels:
+    app: prometheus
+spec:
+  selector:
+    app: prometheus
+  type:  NodePort
+  ports:
+  - name: prometheus
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+    nodePort: 57006
+---
+apiVersion: v1
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval:    15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+      evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+
+    alerting:
+      alertmanagers:
+      - static_configs:
+        - targets: ['alertmanager:9093']
+    rule_files:
+      - "/usr/local/alertmanager/rules/*.rules"
+
+    scrape_configs:
+      - job_name: 'node-monitor'
+        file_sd_configs:
+          - files: ['/usr/local/prometheus/groups/nodegroups/*.json']
+            refresh_interval: 10s
+
+      - job_name: "http"
+        metrics_path: /probe
+        params:
+          module: [http_2xx]  #使用http模块
+        file_sd_configs:
+        - refresh_interval: 15s
+          files:
+          - "/usr/local/blackbox_exporter/blackbox_exporter_rules/http*.yml"
+        relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: blackbox-exporter:9115
+
+      - job_name: 'port_status'
+        metrics_path: /probe
+        params:
+          module: [tcp_connect]  ##使用tcp模块
+        file_sd_configs:
+        - refresh_interval: 15s
+          files:
+          - "/usr/local/blackbox_exporter/blackbox_exporter_rules/port*.yml"
+        relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - target_label: __address__
+          replacement: blackbox-exporter:9115
+
+      - job_name: "icmp_ping"
+        metrics_path: /probe
+        params:
+          module: [icmp]  # 使用icmp模块
+        file_sd_configs:
+        - refresh_interval: 10s
+          files:
+          - "/usr/local/blackbox_exporter/blackbox_exporter_rules/ping*.yml"  #具体的配置文件
+        relabel_configs:
+        - source_labels: [__address__]
+          regex: (.*)(:80)?
+          target_label: __param_target
+          replacement: ${1}
+        - source_labels: [__param_target]
+          regex: (.*)
+          target_label: ping
+          replacement: ${1}
+        - source_labels: []
+          regex: .*
+          target_label: __address__
+          replacement: blackbox-exporter:9115
+
+      - job_name: "jvm-monitor"
+        metrics_path: /metrics
+        file_sd_configs:
+        - refresh_interval: 10s
+          files:
+          - "/usr/local/prometheus/groups/jvmgroup/jvm*.yml"
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: zhangjt
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: zhangjt
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate      
+  template:
+    metadata:
+      name: prometheus
+      labels:
+        app: prometheus
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.31.1          #prom/prometheus
+        imagePullPolicy: IfNotPresent
+        command:
+        - "/bin/prometheus"
+        args:
+        - "--config.file=/etc/prometheus/prometheus.yml"
+        - "--storage.tsdb.path=/var/lib/prometheus/data"
+        - "--web.external-url=/prometheus"
+        - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+        - "--web.console.templates=/usr/share/prometheus/consoles"
+        ports:
+        - containerPort: 9090
+        resources:
+          requests:
+            cpu: "1"
+            memory: 1024M
+          limits:
+            cpu: "2"
+            memory: 2048M
+        volumeMounts:
+        - name: config
+          mountPath: /etc/prometheus/prometheus.yml
+          subPath: prometheus.yml
+        - name: jvm-monitor
+          mountPath: /usr/local/prometheus/groups/jvmgroup/jvm-monitor.yml
+          subPath: jvm_monitor.yml
+        - name: node-json
+          mountPath: /usr/local/prometheus/groups/nodegroups/node.json
+          subPath: node.json
+        - name: http-hrfax
+          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/http-hrfax.yml
+          subPath: http-hrfax.yml
+        - name: ping-hrfax
+          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/ping-hrfax.yml
+          subPath: ping-hrfax.yml
+        - name: port-hrfax 
+          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/port-hrfax.yml
+          subPath: port-hrfax.yml
+        - name: node-alertmanager-rules
+          mountPath: /usr/local/alertmanager/rules/node.rules
+          subPath: node.rules
+        - name: http-alertmanager-rules
+          mountPath: /usr/local/alertmanager/rules/http.rules
+          subPath: http.rules
+        - name: ping-alertmanager-rules
+          mountPath: /usr/local/alertmanager/rules/ping.rules
+          subPath: ping.rules
+        - name: port-alertmanager-rules
+          mountPath: /usr/local/alertmanager/rules/port.rules
+          subPath: port.rules
+        - name: prometheus-data
+          mountPath: /var/lib/prometheus
+        livenessProbe:
+          tcpSocket:
+            port: 9090           
+          failureThreshold: 3            
+          initialDelaySeconds: 20
+          periodSeconds: 10              
+        readinessProbe:
+          tcpSocket:          
+            port: 9090
+          failureThreshold: 3            
+          initialDelaySeconds: 8
+          periodSeconds: 10          
+      imagePullSecrets:
+        - name: hangzhou-registry-secret
+      volumes:
+      - name: config
+        configMap:
+          name: prometheus-config
+      - name: prometheus-data
+        persistentVolumeClaim:
+          claimName: prometheus-data
+      ## jvm-list-configmap
+      - name: jvm-monitor
+        configMap:
+          name: jvm-monitor
+
+      ## node-list-confimap
+      - name: node-json
+        configMap:
+          name: node-json
+
+      ## blackbox-rule-confimap
+      - name: http-hrfax
+        configMap:
+          name: http-hrfax
+      - name: ping-hrfax
+        configMap:
+          name: ping-hrfax
+      - name: port-hrfax
+        configMap:
+          name: port-hrfax
+
+      ## alertmanager 报警规则
+      - name: http-alertmanager-rules
+        configMap:
+          name: http-alertmanager-rules
+      - name: ping-alertmanager-rules
+        configMap:
+          name: ping-alertmanager-rules
+      - name: port-alertmanager-rules
+        configMap:
+          name: port-alertmanager-rules
+      - name: node-alertmanager-rules
+        configMap:
+          name: node-alertmanager-rules

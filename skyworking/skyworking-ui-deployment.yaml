@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: skywalking-ui
+  name: skywalking-ui
+  namespace: zhangjt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skywalking-ui
+  template:
+    metadata:
+      labels:
+        app: skywalking-ui
+    spec:
+      containers:
+        - env:
+            - name: SW_OAP_ADDRESS
+              value: "skywalking:12800"          
+          image: apache/skywalking-ui:8.5.0
+          imagePullPolicy: IfNotPresent         
+          name: skywalking-ui
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: '1'
+              memory: 500Mi
+            requests:
+              cpu: '0.5'
+              memory: 100Mi
+          volumeMounts:
+            - mountPath: /etc/localtime
+              name: volume-localtime
+      volumes:
+        - hostPath:
+            path: /etc/localtime
+            type: ''
+          name: volume-localtime

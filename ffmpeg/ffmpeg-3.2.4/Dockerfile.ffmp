@@ -1,0 +1,15 @@
+FROM centos:7
+
+ENV  PATH $PATH:/usr/local/ffmpeg/bin
+
+WORKDIR /opt
+
+ADD ffmpeg-3.2.4.tar.gz x264-snapshot-20170212-2245-stable.tar.gz  /opt/
+RUN yum install  -y  gcc gcc-c++ autoconf automake  zlib zlib-devel openssl openssl-devel pcre pcre-devel  && rm -rf /var/cache/yum/* && yum clean all \
+    && wget http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz \
+    && tar -zxvf yasm-1.3.0.tar.gz  \
+    && cd yasm-1.3.0 && ./configure && make -j 4 && make install \
+    && cd /opt &&  wget https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.gz --no-check-certificate && tar fx nasm-2.13.03.tar.gz && cd nasm-2.13.03 &&  ./configure  && make && make install \
+    && cd /opt/x264 && ./configure  --enable-static --enable-shared && make && make install \
+    && cd /opt/ffmpeg-3.2.4 && ./configure --prefix=/usr/local/ffmpeg  --enable-gpl --enable-libx264 && make -j 4 && make install && rm -rf /opt/ffmpeg* && rm -rf /opt/yasm* \
+    && /bin/cp -r /usr/local/lib/* /usr/lib64

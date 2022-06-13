@@ -1,0 +1,182 @@
+oc get nodes //获取集群所有节点
+oc describe node node-name  //查看对应节点详细信息，可以看到运行在该节点下的pod
+oc get pods -n namespace-name //查看对应namespace下pod
+oc get all  //查看当前project下的所有资源
+oc status  //查看登录在哪个project下
+oc get pods -o wide -n namespace-name //查看对应namespace下pod详情
+oc describe pod pod-name -n namespace-name //查看pod详细信息
+oc get limitrange -n namespace-name //获取对应namespace的limitrange配置文件
+oc describe limitrange limitrange.config -n namespace-name //查看配置文件详情
+oc edit limitrange limitrange.config -n namespace-name //修改limitrange配置
+oc project project-name //切换到project
+oc adm policy add-scc-to-user anyuid -z default //为该project下default账户开启anyuid，
+可以使用root权限，一般是安装/运行某些软件时需要
+oc adm policy remove-scc-from-user anyuid -z default //删除default的anyuid权限
+oc get pod //查看该project下的pod
+oc get service //查看该project下的service
+oc get endpoints  //查看该project下的Endpoints
+oc delete pod pod-name -n namespace-name  //重启pod
+oc rollout history DeploymentConfig/dc-name  //查看dc历史版本
+oc rollout history DeploymentConfig/dc-name --revision=5 //回滚到5版本
+oc scale dc pod-name --replicas=3 -n namespace //设置副本数为3
+oc autoscale dc dc-name --min=2 --max=10 --cpu-percent=80  //设置自动伸缩最小2，最大10
+oc get scc //查看scc
+oc describe scc anyuid //查看anyuid详细信息,user即包含已经开启anyuid的project
+oc describe clusterrole.rbac //查看集群管理员角色及权限
+oc describe clusterrolebinding.rbac //查看用户组及绑定的角色
+oc adm policy add-cluster-role-to-user cluster-admin username //添加username为cluster-admin
+oc get routes --all-namespaces  //查看所有namespace的route
+oc logs -f pod-name //查看pod log
+docker ps -a|grep pod-name //查看pod对应containerID
+docker exec -it containerID /bin/sh  //登录到container
+oc new-project my-project  //创建project
+oc new-app https://github.com/sclorg/cakephp-ex  //创建APP
+oc status //查看当前项目状态
+oc api-resources //查看server支持的api资源
+oc adm must-gather  //收集当前集群的状态信息
+oc adm top pods //查看pod资源状态
+oc adm top node //查看节点资源状态
+oc adm top images //查看images使用情况
+oc adm cordon node1 //标记node1为SchedulingDisabled
+oc adm manage-node <node1> --schedulable = false //标记node1为unschedulable
+oc adm manage-node node1 --schedulable //标记node1为schedulable
+oc adm drain node1 //将node1进入维护模式
+oc delete node //删除node
+oc adm node-logs --role master -u NetworkManager.service //获取节点网络日志
+oc get csr //查询CSR(certificate signing requests)
+oc adm certificate approve csr-name //approve CSR
+oc adm certificate deny csr_name  //拒掉csr
+oc get csr|xargs oc adm certificate approve csr //approve所有csr
+echo 'openshift_master_bootstrap_auto_approve=true' >> /etc/ansible/hosts  //设置自动approve csr
+oc get project projectname  //get project
+oc describe project projectname //查看project信息
+oc get pod pod-name -o yaml  //查看pod-name yaml文件
+oc get nodes --show-labels //查看节点label
+oc label nodes node-name label-key=label-value  //给node添加标签，pod也要有对应label（在第二层spec下添加nodeSelector），pod就会运行在指定的node上
+oc label nodes node-name key=new-value --overwrite //更新指定key值的label
+oc label nodes node-name key-  //删除指定key值的label
+oadm manage-node node-name --list-pods  //查看运行在某node上的所有pod
+oadm manage-node node-name --schedulable=false //mark node as unschedulable
+oc get svc //查看service
+oc patch dc dc-name -p '{"spec":{"template":{"spec":{"containers":[{"name":"dc-name","securityContext":{"runAsUser": 1000160000}}],"securityContext":{"runAsUser": 1000160000,"fsGroup": 1000160000}}}}}'   //修改dc-name yaml文件
+oc login --token=iz56jscHZp9mSN3kHzjayaEnNo0DMI_nRlaiJyFmN74 --server=https://console.qa.c.sm.net:8443 //使用命令行登录openshift，token是用你自己的账户在登录网址时生成的token
+oc rsh -t  //查看token
+oc rsh pod-name  //使用命令行登录pod
+oc whoami --show-server  //查看当前登录的服务地址
+oc whoami //查看当前登录账户
+oc get dc -n namespace  //查看deployment config
+oc get deploy -n namespace //查看deploy
+oc edit deploy/deployname -o yaml -n namespace //编辑deploy yaml文件
+oc get cronjob  //查看cronjob
+oc edit cronjob/cronjob-name -n namespace-name  //编辑cronjob
+oc describe cm/configmap-name -n namespace-name  //查看cronjob
+oc get configmap -n namespace-name  //查询configmap
+oc get cm -n namespace-name  //查询configmap
+cat /etc/origin/master/master-config.yaml|grep cidr  //查看集群pod网段规划
+oc edit vm appmngr54321-poc-msltoibh -n appmngr54321-poc -o yaml //编辑VM yaml文件
+oc serviceaccounts get-token sa-name  //获取sa-name的token
+oc login url --token=token  //使用token登录
+oc scale deployment deployment-name --replicas 5  //扩展pod副本数量
+oc config view //查看config
+TOKEN=$(oc get secret $(oc get serviceaccount default -o jsonpath='{.secrets[0].name}') -o jsonpath='{.data.token}' | base64 --decode )  //get token
+APISERVER=$(oc config view --minify -o jsonpath='{.clusters[0].cluster.server}')  //get apiserver
+curl $APISERVER/api --header "Authorization: Bearer $TOKEN" --insecure  //curl API
+oc api-versions  //get api versions
+oc api-resources //get api-resources
+oc get hpa  --all-namespaces//查询HPA
+oc describe hpa/hpaname -n namespace  //查看HPA，可以看到Metrics，Events
+oc create serviceaccount caller //创建sa
+oc adm policy add-cluster-role-to-user cluster-admin -z caller //赋予cluster-admin权限
+oc serviceaccounts get-token caller //get sa token
+echo $KUBECONFIG //获取kubeconfig文件位置
+oc get cm --all-namespaces -l app=deviation //根据labelselector筛选cm
+oc describe PodMetrics podname  //查询pod CPU/mem usage，openshift4.X适用
+oc api-resources -o wide   //查看shortnames、apiGroup、verbs
+oc delete pod --selector logging-infra=fluentd //按selector删除
+oc get pods -n logger -w  //watch 某个pod状态
+oc whoami  //查看当前登录账户
+oc explain pv.spec  //查看资源对象的定义
+oc get MutatingWebhookConfiguration   //查看MutatingWebhook
+oc get ValidatingWebhookConfiguration  //查看ValidatingWebhook
+oc annotate validatingwebhookconfigurations <validating_webhook_name> service.beta.openshift.io/inject-cabundle=true   //给validatingwebhook注入CA
+oc annotate mutatingwebhookconfigurations <mutating_webhook_name> service.beta.openshift.io/inject-cabundle=true   //给mutatingwebhook注入CA
+
+oc get secrets/signing-key -n openshift-service-ca \
+     -o template='{{index .data "tls.crt"}}' \
+     | base64 -d \
+     | openssl x509 -noout -enddate
+//查看当前服务 CA 证书的到期日期
+oc delete secret/signing-key -n openshift-service-ca  //手动更新该服务证书
+
+for I in $(oc get ns -o jsonpath='{range .items[*]} {.metadata.name}{"\n"} {end}'); \
+      do oc delete pods --all -n $I; \
+      sleep 1; \
+      done
+//将新证书应用到所有服务，请重启集群中的所有 pod
+
+oc annotate crd <crd_name> \
+
+
+service.beta.openshift.io/inject-cabundle=true   //给CRD注入CA
+oc annotate apiservice <api_service_name> service.beta.openshift.io/inject-cabundle=true   //给apiservice 注入CA
+oc annotate configmap <config_map_name> service.beta.openshift.io/inject-cabundle=true   //给configmap  注入CA
+oc annotate service <service_name> service.beta.openshift.io/serving-cert-secret-name=<secret_name>   //给service 添加服务证书
+oc get pv --selector=='path=testforocp' //根据label查询pv
+
+# oc get --raw "/apis/metrics.k8s.io/v1beta1" | jq . 
+{
+  "kind": "APIResourceList",
+  "apiVersion": "v1",
+  "groupVersion": "metrics.k8s.io/v1beta1",
+  "resources": [
+    {
+      "name": "nodes",
+      "singularName": "",
+      "namespaced": false,
+      "kind": "NodeMetrics",
+      "verbs": [
+        "get",
+        "list"
+      ]
+    },
+    {
+      "name": "pods",
+      "singularName": "",
+      "namespaced": true,
+      "kind": "PodMetrics",
+      "verbs": [
+        "get",
+        "list"
+      ]
+    }
+  ]
+}
+
+oc get cm --all-namespaces -o=jsonpath='{.items[?(@..metadata.annotations.cpuUsage=="0")].metadata.name}'  //根据自定义annotations查询，返回cm name
+ns=$(oc get cm --selector='app=dev' --all-namespaces|awk '{print $1}'|grep -v NAMESPACE)
+for i in $ns;
+> do
+> oc get cm dev -oyaml -n $i >> /tmp/test.txt
+> done;
+
+# oc project openshift-etcd
+# oc rsh etcd-master-0.ocp4.example.com   //进入etcd
+# etcdctl get /kubernetes.io/ --prefix --keys-only  //查询资源
+# etcdctl get /kubernetes.io/horizontalpodautoscalers/yunxiao5432/example12345 --prefix  //查询HPA
+# oc get --raw /apis/autoscaling/v2beta1/namespaces/<namespace>/horizontalpodautoscalers/<resource_name> | jq .   //查询HPA  注：使用哪个版本(v2beta1)查询出来的就是哪个版本，查询时自动转换
+
+
+
+ocp的权限提升至root
+$ oc create serviceaccount hrfax
+$ oc adm policy add-scc-to-user anyuid -z hrfax
+    spec:
+      serviceAccountName: hrfax
+
+oc adm policy remove-scc-from-user   anyuid -z  hrfax
+
+
+1. oc  create ns hrfax-facesign
+2. oc  project hrfax-facesign
+3. oc adm policy add-scc-to-group anyuid system:authenticated
+

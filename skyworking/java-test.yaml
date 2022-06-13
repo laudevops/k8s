@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3-deployment
+  namespace: zhangjt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s3
+  template:
+    metadata:
+      labels:
+        app: s3
+        tier: s3
+        track: stable
+    spec:
+      initContainers:
+      - name: skywalking-agent-init
+        image: 192.168.0.40/zhangjt/skyworking-agent:8.7.0
+        command: ["cp", "-rf", "/skywalking/agent", "/tmp"]
+        volumeMounts:
+        - mountPath: /tmp
+          name: sky-agent-volume
+      containers:
+        - name: s3
+          image: 192.168.0.40/zhangjt/java-test
+          imagePullPolicy: Always
+          env:
+          - name: PARAMS
+            value: "--spring.profiles.active=test"
+          - name: JAVA_OPTS
+            value: "-Xmx1024m -Xms1024m"
+          - name: skywalking_params
+            value: "-javaagent:/opt/skywalking/agent/skywalking-agent.jar -Dskywalking.collector.backend_service=skywalking:11800 -Dskywalking.agent.service_name=5009-stream-k8s-test"
+          resources:
+            requests:
+              memory: 1024Mi
+              cpu: "500m"
+            limits:
+              memory: 1024Mi
+              cpu: "500m"
+          volumeMounts:
+          - mountPath: /opt/skywalking
+            name: sky-agent-volume
+      volumes:
+      - name: sky-agent-volume
+        emptyDir: {}   
+      imagePullSecrets:
+        - name: shmsecret

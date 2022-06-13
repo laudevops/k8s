@@ -1,0 +1,56 @@
+apiVersion: v1
+data:
+  http.rules: |
+    groups:
+    - name: http-https
+      rules:
+      - alert: "http请求失败"
+        expr: probe_http_status_code != 200
+        for: 15s
+        labels:
+          severity: warn
+        annotations:
+          description: '域名{{$labels.instance}}返回值不是200,请注意!!!'
+          summary: "http请求失败"
+kind: ConfigMap
+metadata:
+  name: http-alertmanager-rules
+  namespace: zhangjt
+---
+apiVersion: v1
+data:
+  ping.rules: |
+    groups:
+    - name: ping
+      rules:
+      - alert: "ping检测失败"
+        expr: probe_success{group="ping",job="port_status"} != 1
+        for: 15s
+        labels:
+          severity: warn
+        annotations:
+          description: '{{$labels.instance}}ping检测失败,请注意!!!'
+          summary: "ping检测失败"
+kind: ConfigMap
+metadata:
+  name: ping-alertmanager-rules
+  namespace: zhangjt
+---
+apiVersion: v1
+data:
+  port.rules: |
+    groups:
+    - name: port
+      rules:
+      - alert: "port检测失败"
+        expr: probe_success{group="tcp",job="port_status"} != 1
+        for: 15s
+        labels:
+          severity: warn
+        annotations:
+          description: '{{$labels.instance}}端口检测失败,请注意!!!'
+          summary: "port检测失败"
+kind: ConfigMap
+metadata:
+  name: port-alertmanager-rules
+  namespace: zhangjt

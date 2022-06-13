@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dingtalk
+  namespace: zhangjt
+  labels:
+    name: dingtalk
+spec:
+  selector:
+    app: dingtalk
+  ports:
+  - name: dingtalk
+    port: 8060
+    protocol: TCP
+    targetPort: 8060
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dingtalk
+  namespace: zhangjt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dingtalk
+  template:
+    metadata:
+      name: dingtalk
+      labels:
+        app: dingtalk
+    spec:
+      containers:
+      - name: dingtalk
+        image: timonwong/prometheus-webhook-dingtalk:v0.3.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8060
+        args:
+          - "--ding.profile=webhook1=https://oapi.dingtalk.com/robot/send?access_token=094dfb0d47b72fcee05451242031a4be2f673c1391af60fe15d198264fe92231"

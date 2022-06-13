@@ -1,0 +1,33 @@
+apiVersion: v1
+data:
+  http-hrfax.yml: |
+    - targets:
+      - http://192.168.0.77:30091/api/actuator/health
+kind: ConfigMap
+metadata:
+  name: http-hrfax
+  namespace: zhangjt
+---
+apiVersion: v1
+data:
+  ping-hrfax.yml: |
+    - targets: ['192.168.0.159']
+      labels:
+        instance: '192.168.0.159'
+        group: 'ping'
+kind: ConfigMap
+metadata:
+  name: ping-hrfax
+  namespace: zhangjt
+---
+apiVersion: v1
+data:
+  port-hrfax.yml: |
+    - targets: ['192.168.0.159:20010']
+      labels:
+        instance: 'first-java'
+        group: 'tcp'
+kind: ConfigMap
+metadata:
+  name: port-hrfax
+  namespace: zhangjt

@@ -1,0 +1,28 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: grafana-storage
+  namespace: monitoring
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs-storage"  # nfs-storage  是storage-class的名字 跟上边保持一致
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: volume-serving-cert
+  namespace: monitoring
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs-storage"  # nfs-storage  是storage-class的名字 跟上边保持一致
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+

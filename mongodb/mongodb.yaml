@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-conf
+  namespace: hrfax-logs
+data:
+  mongodb.conf: |
+    dbpath=/data/mongodb
+    pidfilepath=/data/mongodb/master.pid
+    directoryperdb=true
+    logappend=true
+    bind_ip=0.0.0.0
+    port=27017
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    name: mongodb
+  name: mongodb
+  namespace: hrfax-logs 
+spec:
+  clusterIP: "None"
+  ports:
+    - name: mongodb
+      port: 27017
+  selector:
+    name: mongodb
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    name: mongodb
+  name: mongodb-nodeport
+  namespace: hrfax-logs
+spec:
+  type: NodePort
+  ports:
+    - name: mongodb-nodeport
+      port: 27017
+      targetPort: 27017
+      nodePort: 35650
+  selector:
+    name: mongodb
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: hrfax-logs
+spec:
+  replicas: 1
+  serviceName: mongodb
+  selector:
+    matchLabels:
+      name: mongodb
+  template:
+    metadata:
+      labels:
+        name: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:5.0.5
+          command:
+            - sh
+            - -c
+            - "exec mongod -f /data/mongodb/conf/mongodb.conf"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+              name: mongodb
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "4"
+              memory: 8192Mi
+            requests:
+              cpu: "2"
+              memory: 4096Mi
+          volumeMounts:
+            - name: mongodb-config
+              mountPath: /data/mongodb/conf/
+            - name: data
+              mountPath: /data/mongodb/
+      volumes:
+        - name: mongodb-config
+          configMap:
+            name: mongodb-conf
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      storageClassName: "new-nfs-storage"
+      resources:
+        requests:
+          storage: 50Gi
+

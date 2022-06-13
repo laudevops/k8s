@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: skywalking
+  namespace: zhangjt
+  labels:
+    app: skywalking
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 12800
+      protocol: TCP
+      targetPort: 12800
+    - name: grpc
+      port: 11800
+      protocol: TCP
+      targetPort: 11800
+  selector:
+    app: skywalking
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skywalking-ui
+  namespace: zhangjt
+  labels:
+    app: skywalking-ui
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: skywalking-ui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skywalking-ui-nodeport
+  namespace: zhangjt
+  labels:
+    app: skywalking-ui
+spec:
+  selector:
+    app: skywalking-ui
+  type: NodePort
+  ports:
+  - name: "skywalking-ui-57104"
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+    nodePort: 57104

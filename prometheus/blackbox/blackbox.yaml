@@ -1,0 +1,104 @@
+apiVersion: v1
+data:
+  blackbox.yml: |
+    modules:
+      http_2xx:
+        prober: http
+      http_post_2xx:
+        prober: http
+        http:
+          method: POST
+      tcp_connect:
+        prober: tcp
+      pop3s_banner:
+        prober: tcp
+        tcp:
+          query_response:
+          - expect: "^+OK"
+          tls: true
+          tls_config:
+            insecure_skip_verify: false
+      ssh_banner:
+        prober: tcp
+        tcp:
+          query_response:
+          - expect: "^SSH-2.0-"
+          - send: "SSH-2.0-blackbox-ssh-check"
+      irc_banner:
+        prober: tcp
+        tcp:
+          query_response:
+          - send: "NICK prober"
+          - send: "USER prober prober prober :prober"
+          - expect: "PING :([^ ]+)"
+            send: "PONG ${1}"
+          - expect: "^:[^ ]+ 001"
+      icmp:
+        prober: icmp
+kind: ConfigMap
+metadata:
+  name: blackbox-exporter
+  namespace: zhangjt
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackbox-exporter
+  namespace: zhangjt
+  labels:
+    app: blackbox-exporter
+spec:
+  selector:
+    app: blackbox-exporter
+  ports:
+  - name: blackbox-9115
+    port: 9115
+    protocol: TCP
+    targetPort: 9115
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackbox-exporter
+  namespace: zhangjt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blackbox-exporter
+  template:
+    metadata:
+      labels:
+        app: blackbox-exporter
+    spec:
+      containers:
+      - name: blackbox-exporter
+        image: prom/blackbox-exporter:v0.19.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9115
+        readinessProbe:
+          tcpSocket:
+            port: 9115
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: 50Mi
+            cpu: 100m
+          limits:
+            memory: 60Mi
+            cpu: 200m
+        volumeMounts:
+        - name: config
+          mountPath: /etc/blackbox_exporter
+        args:
+        - '--config.file=/etc/blackbox_exporter/blackbox.yml'
+        - '--web.listen-address=:9115'
+      volumes:
+      - name: config
+        configMap:
+          name: blackbox-exporter

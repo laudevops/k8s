@@ -1,0 +1,110 @@
+1. 暴露内部仓库对外可访问
+默认情况下，集群安装完成之后，已经为docker-registry创建了route对象，在早期版本中，未暴露docker-registry的对外访问，可参考链接https://docs.openshift.com/container-platform/3.7/install_config/registry/securing_and_exposing_registry.html完成配置。
+获取docker-registry的域名
+
+# oc get route/docker-registry -n default
+NAME              HOST/PORT                                     PATH      SERVICES          PORT      TERMINATION   WILDCARD
+docker-registry   docker-registry-default.zhangjt.shinemo.net             docker-registry   <all>     passthrough   None
+
+2. 配置Docker daemon允许访问internal registry
+OCP集群内部通过docker registry的svc名称发布镜像，而svs名称的仓库通过HTTP访问，这里需要添加insecure
+修改集群中所有节点docker配置文件,确保OPTIONS参数中包含–insecure-registry 172.30.0.0/16
+
+kubectl get svc -o wide
+NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                   AGE       SELECTOR
+docker-registry    ClusterIP   172.30.105.4    <none>        5000/TCP                  2d        docker-registry=default
+
+
+
+mkdir -p /etc/docker /data/docker
+
+tee /etc/docker/daemon.json <<-'EOF'
+
+{
+
+  "registry-mirrors": ["https://pkeh50sq.mirror.aliyuncs.com"],
+  "insecure-registries": ["192.18.0.40"],
+  "graph": "/data/docker"
+
+}
+
+EOF
+
+sudo systemctl daemon-reload
+
+sudo systemctl restart docker 
+
+
+3. 创建sa并赋予适当的权限
+为了从远端访问OCP内部镜像仓库，我们需要提供访问的证书，证书可以是普通用户的token或者是serviceaccount的token，因为普通用户的token会过期，对于自动化的方式建议使用serviceaccount的token完成。
+你可以使用每个project下的serviceaccount：builder或者自己建立serviceaccount，我们使用集群management-infra project下的serviceaccount：management-admin来实现镜像的push和pull。
+对management-admin赋予全局的image-builder角色
+
+# oc adm policy add-cluster-role-to-user system:image-builder system:serviceaccount:management-infra:management-admin
+# oc sa get-token management-admin -n management-infra 
+后面这个token赋值为registry_token 变量
+
+4. 创建测试project和docker pull secret
+在ocp创建测试项目或者直接将镜像push到openshift项目。
+oc new-project hrfax-facesign
+
+# oc secrets new-dockercfg private-registry --docker-server=docker-registry-default.zhangjt.shinemo.net  --docker-username=management-admin --docker-password=${registry-token} --docker-email=abc@example.com
+将docker pull secret添加到serviceaccount：default
+
+# oc secrets link sa/default secret/private-registry --for=pull
+
+5. 准备本地测试镜像，配置push端，推送镜像
+我们使用busybox:latest作为测试镜像，下面配置push的机器可以远程推送镜像到内部仓库。或者配置jenkins机器完成push镜像。
+默认内部镜像仓库使用HTTPS协议访问，我们需要同步ocp证书到push镜像的机器192.168.0.159
+#192.168.0.159
+mkdir -p  /etc/docker/certs.d/docker-registry-default.zhangjt.shinemo.net
+scp root@192.168.0.198:/etc/origin/master/ca.crt /etc/docker/certs.d/docker-registry-default.zhangjt.shinemo.net/ca.crt
+
+配置镜像仓库的域名解析，如果有DNS解析则不要配置本地解析
+# vi /etc/hosts
+192.168.0.202 docker-registry-default.zhangjt.shinemo.net
+
+
+registry_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJtYW5hZ2VtZW50LWluZnJhIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Im1hbmFnZW1lbnQtYWRtaW4tdG9rZW4tNGw2MngiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoibWFuYWdlbWVudC1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjJmZjYxNzRkLTY3Y2UtMTFlYy04Mjg0LTAwNTA1NjlmZmE0NCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDptYW5hZ2VtZW50LWluZnJhOm1hbmFnZW1lbnQtYWRtaW4ifQ.gMKCSjhvq-rx7pjO-jmAr__qOeF_OR73NVcSUBsxRqO5-27Yr5EIBOkVbAXxVbOb5lK3UfJm_kvO2P4SJRtSAynL2lS60pn-WnZxLPrpPfeD9VFZSmDlAEFbJ2DiaIVb5RM3O5MK7VEwAgblHT6ZtSYN3nJvCQdYOAzrIHsdP52J030GpnjP0i3LKV3mNnggrhnSIoMLxTtk6fLIc7AdpP-8IrzCXfp7Gx_Ns3nBpTOdCbQdtC_AbhcT0QJW9xGnkFseYDA53Q0IwE_bolphm5fS1gmXN4xTx_SIyBFldA9Z5JoncYVNrSv5B-wdPZM4k4YDD4f5BbrwdzEz8DrG_A
+
+#登陆
+docker login -u management-admin  -p ${registry_token} docker-registry-default.zhangjt.shinemo.net
+
+## 管理节点登陆镜像仓库的方式
+docker login -u admin -p $(oc whoami -t) docker-registry-default.zhangjt.shinemo.net
+
+重新tag镜像并推送
+
+docker pull busybox
+docker tag  busybox docker-registry-default.zhangjt.shinemo.net/hrfax-facesign/busybox
+docker push docker-registry-default.zhangjt.shinemo.net/hrfax-facesign/busybox
+
+6. 在集群中完成上传镜像的部署
+在镜像push成功之后会在project下自动创建is
+oc get is -n hrfax-facesign
+NAME      DOCKER REPO                                               TAGS      UPDATED
+busybox   docker-registry.default.svc:5000/hrfax-facesign/busybox   latest    About a minute ago
+
+使用如下文件发布镜像
+
+# cat busybox-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox
+spec:
+  containers:
+  - image: docker-registry.default.svc:5000/registry-test/busybox:latest
+    command:
+      - sleep
+      - "3600"
+    imagePullPolicy: IfNotPresent
+    name: busybox
+  restartPolicy: Always
+
+查看镜像状态
+
+# oc get pods
+NAME      READY     STATUS    RESTARTS   AGE
+busybox   1/1       Running   0          45m
+
