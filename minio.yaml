@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: zhangjt
+  labels:
+    app: minio
+spec:
+  clusterIP: None
+  ports:
+    - port: 9000
+      name: minio
+  selector:
+    app: minio
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: minio
+  namespace: zhangjt
+spec:
+  selector:
+    matchLabels:
+      app: minio
+  serviceName: minio
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        env:
+        - name: MINIO_ACCESS_KEY
+          value: "admin"
+        - name: MINIO_SECRET_KEY
+          value: "root1234"
+        image: minio/minio:RELEASE.2021-06-07T21-40-51Z
+        args:
+        - server
+        - /data
+        ports:
+        - containerPort: 9000
+          name: minio-port
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      - name: minio-nginx
+        image: nginx
+        ports:
+        - containerPort: 8080
+          name: minio-ngin
+        volumeMounts:
+          - name: minio-nginx-config
+            mountPath: /etc/nginx/conf.d/default.conf
+            subPath: default.conf
+      volumes:
+        - name: minio-nginx-config
+          configMap:
+            name: minio-nginx-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      storageClassName: new-nfs-storage
+      resources:
+        requests:
+          storage:  1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-nodeport-service
+  namespace: zhangjt
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      nodePort: 50096
+  selector:
+    app: minio
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-nodeport-nginx
+  namespace: zhangjt
+spec:
+  type: NodePort
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+      nodePort: 50097
+  selector:
+    app: minio
+
