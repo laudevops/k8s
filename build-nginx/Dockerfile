@@ -1,5 +1,5 @@
 FROM  centos:7
-MAINTAINER Zhangjt<Zhangjt@shinemo.com>
+MAINTAINER WangZuo<wangzuo_666@163.com>
 
 ADD nginx_build.tar.gz openssl-1.1.1e.tar.gz tengine-2.3.3.tar.gz /tmp/
 

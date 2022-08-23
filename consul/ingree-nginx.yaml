@@ -5,7 +5,7 @@ metadata:
   namespace: public-service
 spec:
   rules:
-  - host: consul.hrfax.example
+  - host: consul.lau.example
     http:
       paths:
       - path: /

@@ -15,7 +15,7 @@ data:
 kind: ConfigMap
 metadata:
   name: http-alertmanager-rules
-  namespace: zhangjt
+  namespace: lau
 ---
 apiVersion: v1
 data:
@@ -34,7 +34,7 @@ data:
 kind: ConfigMap
 metadata:
   name: ping-alertmanager-rules
-  namespace: zhangjt
+  namespace: lau
 ---
 apiVersion: v1
 data:
@@ -53,4 +53,4 @@ data:
 kind: ConfigMap
 metadata:
   name: port-alertmanager-rules
-  namespace: zhangjt
+  namespace: lau

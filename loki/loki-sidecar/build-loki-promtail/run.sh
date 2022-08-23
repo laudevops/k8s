@@ -20,7 +20,7 @@ server:
 target_config:
   sync_period: 10s
 scrape_configs:
-- job_name: hrfax-log
+- job_name: lau-log
   static_configs:
   - labels:
       __path__: logpath/**/*.log  ##占位符

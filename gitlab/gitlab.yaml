@@ -38,9 +38,9 @@ spec:
               key: password
           # value: admin321
         - name: GITLAB_ROOT_EMAIL
-          value: liujian@hrfax.cn
+          value: wangzuo_666@163.com
         - name: GITLAB_HOST
-          value: gitlab-boc.hrfax.example
+          value: gitlab.lau.example
         - name: GITLAB_PORT
           value: "80"
         - name: GITLAB_SSH_PORT
@@ -62,7 +62,7 @@ spec:
         - name: DB_USER
           value: gitlab
         - name: DB_PASS
-          value: Hrfax123
+          value: 123456
         - name: DB_NAME
           value: gitlab_production
         - name: REDIS_HOST
@@ -124,7 +124,7 @@ metadata:
     nginx.org/client-max-body-size: "100m"
 spec:
   rules:                      # Ingress 中定义 L7 路由规则
-  - host: gitlab-boc.hrfax.example   # 根据 virtual hostname 进行路由（请使用您自己的域名）
+  - host: gitlab.lau.example   # 根据 virtual hostname 进行路由（请使用您自己的域名）
     http:
       paths:                  # 按路径进行路由
       - path: /

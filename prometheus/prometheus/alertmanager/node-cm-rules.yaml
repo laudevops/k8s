@@ -88,4 +88,4 @@ data:
 kind: ConfigMap
 metadata:
   name: node-alertmanager-rules
-  namespace: zhangjt
+  namespace: lau

@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: prometheus
-  namespace: zhangjt
+  namespace: lau
   labels:
     app: prometheus
 spec:
@@ -98,14 +98,14 @@ data:
 kind: ConfigMap
 metadata:
   name: prometheus-config
-  namespace: zhangjt
+  namespace: lau
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prometheus
-  namespace: zhangjt
+  namespace: lau
   labels:
     app: prometheus
 spec:
@@ -155,15 +155,15 @@ spec:
         - name: node-json
           mountPath: /usr/local/prometheus/groups/nodegroups/node.json
           subPath: node.json
-        - name: http-hrfax
-          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/http-hrfax.yml
-          subPath: http-hrfax.yml
-        - name: ping-hrfax
-          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/ping-hrfax.yml
-          subPath: ping-hrfax.yml
-        - name: port-hrfax 
-          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/port-hrfax.yml
-          subPath: port-hrfax.yml
+        - name: http-lau
+          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/http-lau.yml
+          subPath: http-lau.yml
+        - name: ping-lau
+          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/ping-lau.yml
+          subPath: ping-lau.yml
+        - name: port-lau 
+          mountPath: /usr/local/blackbox_exporter/blackbox_exporter_rules/port-lau.yml
+          subPath: port-lau.yml
         - name: node-alertmanager-rules
           mountPath: /usr/local/alertmanager/rules/node.rules
           subPath: node.rules
@@ -210,15 +210,15 @@ spec:
           name: node-json
 
       ## blackbox-rule-confimap
-      - name: http-hrfax
+      - name: http-lau
         configMap:
-          name: http-hrfax
-      - name: ping-hrfax
+          name: http-lau
+      - name: ping-lau
         configMap:
-          name: ping-hrfax
-      - name: port-hrfax
+          name: ping-lau
+      - name: port-lau
         configMap:
-          name: port-hrfax
+          name: port-lau
 
       ## alertmanager 报警规则
       - name: http-alertmanager-rules

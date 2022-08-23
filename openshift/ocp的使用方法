@@ -168,15 +168,15 @@ for i in $ns;
 
 
 ocp的权限提升至root
-$ oc create serviceaccount hrfax
-$ oc adm policy add-scc-to-user anyuid -z hrfax
+$ oc create serviceaccount lau
+$ oc adm policy add-scc-to-user anyuid -z lau
     spec:
-      serviceAccountName: hrfax
+      serviceAccountName: lau
 
-oc adm policy remove-scc-from-user   anyuid -z  hrfax
+oc adm policy remove-scc-from-user   anyuid -z  lau
 
 
-1. oc  create ns hrfax-facesign
-2. oc  project hrfax-facesign
+1. oc  create ns lau-facesign
+2. oc  project lau-facesign
 3. oc adm policy add-scc-to-group anyuid system:authenticated
 

@@ -16,4 +16,4 @@ data:
 kind: ConfigMap
 metadata:
   name: node-json
-  namespace: zhangjt
+  namespace: lau

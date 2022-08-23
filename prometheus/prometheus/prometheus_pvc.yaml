@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name:  prometheus-data
-  namespace: zhangjt
+  namespace: lau
   annotations:
     volume.beta.kubernetes.io/storage-class: "new-nfs-storage"
 spec:
@@ -17,7 +17,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: grafana-data
-  namespace: zhangjt
+  namespace: lau
   annotations:
     volume.beta.kubernetes.io/storage-class: "new-nfs-storage"
 spec:

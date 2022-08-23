@@ -38,7 +38,7 @@ spec:
             name: config
           - mountPath: /run/promtail
             name: run
-          - mountPath: /app/hrfax-docker-data/containers
+          - mountPath: /app/lau-docker-data/containers
             name: docker
             readOnly: true
           - mountPath: /var/log/pods
@@ -80,7 +80,7 @@ spec:
             type: ""
         - name: docker
           hostPath:
-            path: /app/hrfax-docker-data/containers
+            path: /app/lau-docker-data/containers
         - name: pods
           hostPath:
             path: /var/log/pods

@@ -119,7 +119,7 @@ spec:
    #    fsGroup: 1000
       volumes:          
       - hostPath:
-          path: /app/hrfax-data/zookeeper
+          path: /app/data/zookeeper
         name: zookeeper-data
 #  volumeClaimTemplates:
 #  - metadata:

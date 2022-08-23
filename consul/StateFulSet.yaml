@@ -75,7 +75,7 @@ spec:
            -domain=cluster.local \
            -retry-join=consul-0.consul.$(NAMESPACE).svc.cluster.local \
            -disable-host-node-id \
-           -datacenter=hrfax \
+           -datacenter=lau \
            -enable-script-checks=true \
            -config-file=/consul/config/Acl.json \
         env:

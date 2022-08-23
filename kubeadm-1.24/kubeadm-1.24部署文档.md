@@ -308,8 +308,8 @@ opt/cni/bin/bridge
 
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
 
-      [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.hrfax.net:5000"]
-        endpoint = ["http://registry.hrfax.net:5000"]
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.lau.example:5000"]
+        endpoint = ["http://registry.lau.example:5000"]
 
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
         endpoint = ["https://pkeh50sq.mirror.aliyuncs.com"]

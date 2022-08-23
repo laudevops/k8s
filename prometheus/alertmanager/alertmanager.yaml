@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: alertmanager
-  namespace: zhangjt
+  namespace: lau
   labels:
     name: alertmanager
 spec:
@@ -20,7 +20,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: alertmanager
-  namespace: zhangjt
+  namespace: lau
 spec:
   replicas: 1
   selector:
@@ -88,7 +88,7 @@ data:
 kind: ConfigMap
 metadata:
   name: alertmanager-config
-  namespace: zhangjt
+  namespace: lau
 ---
 apiVersion: v1
 data:
@@ -108,4 +108,4 @@ data:
 kind: ConfigMap
 metadata:
   name: alertmanager-tmpl
-  namespace: zhangjt
+  namespace: lau

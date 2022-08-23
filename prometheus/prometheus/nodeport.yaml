@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: prometheus
-  namespace: carloan
+  namespace: lau
   labels:
     app: moon
 spec:

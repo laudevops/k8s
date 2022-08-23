@@ -22,7 +22,6 @@ spec:
       serviceAccountName: nfs-client-provisioner
       containers:
         - name: nfs-client-provisioner
-#          image: registry.hrfax.example/nfs-client-provisioner:v1
           image: quay.io/external_storage/nfs-client-provisioner
           imagePullPolicy: IfNotPresent
           volumeMounts:

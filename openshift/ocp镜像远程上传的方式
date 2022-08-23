@@ -4,7 +4,7 @@
 
 # oc get route/docker-registry -n default
 NAME              HOST/PORT                                     PATH      SERVICES          PORT      TERMINATION   WILDCARD
-docker-registry   docker-registry-default.zhangjt.shinemo.net             docker-registry   <all>     passthrough   None
+docker-registry   docker-registry-default.lau.shinemo.net             docker-registry   <all>     passthrough   None
 
 2. 配置Docker daemon允许访问internal registry
 OCP集群内部通过docker registry的svc名称发布镜像，而svs名称的仓库通过HTTP访问，这里需要添加insecure
@@ -46,9 +46,9 @@ sudo systemctl restart docker
 
 4. 创建测试project和docker pull secret
 在ocp创建测试项目或者直接将镜像push到openshift项目。
-oc new-project hrfax-facesign
+oc new-project lau-facesign
 
-# oc secrets new-dockercfg private-registry --docker-server=docker-registry-default.zhangjt.shinemo.net  --docker-username=management-admin --docker-password=${registry-token} --docker-email=abc@example.com
+# oc secrets new-dockercfg private-registry --docker-server=docker-registry-default.lau.shinemo.net  --docker-username=management-admin --docker-password=${registry-token} --docker-email=abc@example.com
 将docker pull secret添加到serviceaccount：default
 
 # oc secrets link sa/default secret/private-registry --for=pull
@@ -57,33 +57,33 @@ oc new-project hrfax-facesign
 我们使用busybox:latest作为测试镜像，下面配置push的机器可以远程推送镜像到内部仓库。或者配置jenkins机器完成push镜像。
 默认内部镜像仓库使用HTTPS协议访问，我们需要同步ocp证书到push镜像的机器192.168.0.159
 #192.168.0.159
-mkdir -p  /etc/docker/certs.d/docker-registry-default.zhangjt.shinemo.net
-scp root@192.168.0.198:/etc/origin/master/ca.crt /etc/docker/certs.d/docker-registry-default.zhangjt.shinemo.net/ca.crt
+mkdir -p  /etc/docker/certs.d/docker-registry-default.lau.shinemo.net
+scp root@192.168.0.198:/etc/origin/master/ca.crt /etc/docker/certs.d/docker-registry-default.lau.shinemo.net/ca.crt
 
 配置镜像仓库的域名解析，如果有DNS解析则不要配置本地解析
 # vi /etc/hosts
-192.168.0.202 docker-registry-default.zhangjt.shinemo.net
+192.168.0.202 docker-registry-default.lau.shinemo.net
 
 
 registry_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJtYW5hZ2VtZW50LWluZnJhIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Im1hbmFnZW1lbnQtYWRtaW4tdG9rZW4tNGw2MngiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoibWFuYWdlbWVudC1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjJmZjYxNzRkLTY3Y2UtMTFlYy04Mjg0LTAwNTA1NjlmZmE0NCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDptYW5hZ2VtZW50LWluZnJhOm1hbmFnZW1lbnQtYWRtaW4ifQ.gMKCSjhvq-rx7pjO-jmAr__qOeF_OR73NVcSUBsxRqO5-27Yr5EIBOkVbAXxVbOb5lK3UfJm_kvO2P4SJRtSAynL2lS60pn-WnZxLPrpPfeD9VFZSmDlAEFbJ2DiaIVb5RM3O5MK7VEwAgblHT6ZtSYN3nJvCQdYOAzrIHsdP52J030GpnjP0i3LKV3mNnggrhnSIoMLxTtk6fLIc7AdpP-8IrzCXfp7Gx_Ns3nBpTOdCbQdtC_AbhcT0QJW9xGnkFseYDA53Q0IwE_bolphm5fS1gmXN4xTx_SIyBFldA9Z5JoncYVNrSv5B-wdPZM4k4YDD4f5BbrwdzEz8DrG_A
 
 #登陆
-docker login -u management-admin  -p ${registry_token} docker-registry-default.zhangjt.shinemo.net
+docker login -u management-admin  -p ${registry_token} docker-registry-default.lau.shinemo.net
 
 ## 管理节点登陆镜像仓库的方式
-docker login -u admin -p $(oc whoami -t) docker-registry-default.zhangjt.shinemo.net
+docker login -u admin -p $(oc whoami -t) docker-registry-default.lau.shinemo.net
 
 重新tag镜像并推送
 
 docker pull busybox
-docker tag  busybox docker-registry-default.zhangjt.shinemo.net/hrfax-facesign/busybox
-docker push docker-registry-default.zhangjt.shinemo.net/hrfax-facesign/busybox
+docker tag  busybox docker-registry-default.lau.shinemo.net/lau-facesign/busybox
+docker push docker-registry-default.lau.shinemo.net/lau-facesign/busybox
 
 6. 在集群中完成上传镜像的部署
 在镜像push成功之后会在project下自动创建is
-oc get is -n hrfax-facesign
+oc get is -n lau-facesign
 NAME      DOCKER REPO                                               TAGS      UPDATED
-busybox   docker-registry.default.svc:5000/hrfax-facesign/busybox   latest    About a minute ago
+busybox   docker-registry.default.svc:5000/lau-facesign/busybox   latest    About a minute ago
 
 使用如下文件发布镜像
 

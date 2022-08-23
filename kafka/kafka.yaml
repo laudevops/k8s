@@ -169,7 +169,7 @@ spec:
           periodSeconds: 20
       volumes:          
       - hostPath:
-          path: /app/hrfax-data/kafka
+          path: /app/data/kafka
         name: kafka-data
 #  volumeClaimTemplates:
 #  - metadata:

@@ -5,8 +5,8 @@ data:
       - http://192.168.0.77:30091/api/actuator/health
 kind: ConfigMap
 metadata:
-  name: http-hrfax
-  namespace: zhangjt
+  name: http-lau
+  namespace: lau
 ---
 apiVersion: v1
 data:
@@ -17,8 +17,8 @@ data:
         group: 'ping'
 kind: ConfigMap
 metadata:
-  name: ping-hrfax
-  namespace: zhangjt
+  name: ping-lau
+  namespace: lau
 ---
 apiVersion: v1
 data:
@@ -29,5 +29,5 @@ data:
         group: 'tcp'
 kind: ConfigMap
 metadata:
-  name: port-hrfax
-  namespace: zhangjt
+  name: port-lau
+  namespace: lau

@@ -15,4 +15,4 @@ data:
 kind: ConfigMap
 metadata:
   name: jvm-monitor
-  namespace: zhangjt
+  namespace: lau

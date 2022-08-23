@@ -51,8 +51,7 @@ spec:
           - mountPath: /data/logs
             name: logs
         - name: promtail
-          #image: grafana/promtail:2.3.0
-          image: 192.168.0.40/lau/grafana-promtail:2.3.0-hrfax
+          image: grafana/promtail:2.3.0
           imagePullPolicy: IfNotPresent
           args: 
           - -config.file=/etc/promtail/promtail.yaml
