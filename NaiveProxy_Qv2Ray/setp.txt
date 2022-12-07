@@ -1,0 +1,14 @@
+1.执行do.sh
+curl   https://raw.githubusercontent.com/laudevops/k8s/master/NaiveProxy_Qv2Ray/do.sh | bash
+
+2.执行 naive
+期间请输入域名  邮箱 
+
+
+插件地址:
+https://github.com/Qv2ray/QvPlugin-NaiveProxy/releases/tag/v1.0.0
+核心地址：
+https://github.com/klzgrad/naiveproxy/releases
+
+
+
