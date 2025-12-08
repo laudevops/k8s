@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于我们 - Next AI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #f8fafc;
+      min-height: 100vh;
+      color: #1a1a1a;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 30px;
+    }
+    
+    /* 头部 */
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 20px;
+    }
+    
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111;
+    }
+    
+    .page-title {
+      font-size: 36px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 12px;
+    }
+    
+    .page-subtitle {
+      font-size: 16px;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+    
+    /* 关于卡片 */
+    .about-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .card-title-icon {
+      width: 32px;
+      height: 32px;
+      background: #f0fdf4;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    
+    .card-content {
+      font-size: 15px;
+      color: #4b5563;
+      line-height: 1.8;
+    }
+    
+    /* 联系方式 */
+    .contact-section {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .contact-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    
+    .contact-item {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: all 0.2s;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .contact-item:hover {
+      border-color: #16a34a;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.1);
+    }
+    
+    .contact-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 16px;
+    }
+    
+    .contact-icon.email {
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    }
+    
+    .contact-icon.qq {
+      background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+    }
+    
+    .contact-label {
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+    
+    .contact-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 16px;
+      word-break: break-all;
+    }
+    
+    .contact-value a {
+      color: #16a34a;
+      text-decoration: none;
+    }
+    
+    .contact-value a:hover {
+      text-decoration: underline;
+    }
+    
+    /* QQ二维码占位 */
+    .qr-placeholder {
+      width: 140px;
+      height: 140px;
+      background: #fff;
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 13px;
+      gap: 8px;
+    }
+    
+    .qr-placeholder svg {
+      width: 32px;
+      height: 32px;
+      opacity: 0.5;
+    }
+    
+    /* 如果有真实二维码图片，用这个样式 */
+    .qr-image {
+      width: 140px;
+      height: 140px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid #e5e7eb;
+    }
+    
+    /* 复制按钮 */
+    .copy-btn {
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .copy-btn:hover {
+      background: #15803d;
+    }
+    
+    /* 底部 */
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      padding-top: 30px;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .footer-text {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    
+    .footer-link {
+      color: #16a34a;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #16a34a;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    /* 响应式 */
+    @media (max-width: 600px) {
+      .container {
+        padding: 40px 20px;
+      }
+      
+      .page-title {
+        font-size: 28px;
+      }
+      
+      .about-card, .contact-section {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast">✓ 已复制到剪贴板</div>
+
+  <div class="container">
+    <!-- 头部 -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">N</div>
+        <span class="logo-text">Next AI</span>
+      </div>
+      <h1 class="page-title">关于我们</h1>
+      <p class="page-subtitle">稳定的主流大模型网关接口，一站接入全球顶级 AI 模型</p>
+    </div>
+    
+    <!-- 关于介绍 -->
+    <div class="about-card">
+      <h2 class="card-title">
+        <span class="card-title-icon">🚀</span>
+        平台介绍
+      </h2>
+      <div class="card-content">
+        <p>Next AI 是一个专业的 AI 模型网关接口平台，致力于为开发者提供稳定、高效、便捷的 AI 接入服务。</p>
+        <br>
+        <p>我们精选全球最新最强的大语言模型，包括 Claude、GPT-4、Gemini 等主流模型，通过统一的 API 接口，让您轻松接入各类 AI 能力。</p>
+        <br>
+        <p><strong>我们的优势：</strong></p>
+        <p>• 稳定可靠 - 99.9% 服务可用性保障</p>
+        <p>• 品质至上 - 只选最新最强模型</p>
+        <p>• 简单易用 - 统一 API，快速接入</p>
+        <p>• 优惠实惠 - 新用户注册即送 $0.2 体验金</p>
+      </div>
+    </div>
+    
+    <!-- 联系方式 -->
+    <div class="contact-section">
+      <h2 class="contact-title">📮 联系我们</h2>
+      
+      <div class="contact-grid">
+        <!-- 邮箱 -->
+        <div class="contact-item">
+          <div class="contact-icon email">📧</div>
+          <div class="contact-label">电子邮箱</div>
+          <div class="contact-value">
+            <a href="mailto:support@next-ai.asia">support@next-ai.asia</a>
+          </div>
+          <button class="copy-btn" onclick="copyText('support@next-ai.asia')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            复制邮箱
+          </button>
+        </div>
+        
+        <!-- QQ -->
+        <div class="contact-item">
+          <div class="contact-icon qq">💬</div>
+          <div class="contact-label">QQ 联系</div>
+          <div class="contact-value">123456789</div>
+          
+          <!-- 二维码占位符 - 替换成你的真实二维码图片 -->
+          <div class="qr-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="14" width="3" height="3"></rect>
+              <rect x="18" y="14" width="3" height="3"></rect>
+              <rect x="14" y="18" width="3" height="3"></rect>
+              <rect x="18" y="18" width="3" height="3"></rect>
+            </svg>
+            <span>QQ二维码</span>
+          </div>
+          
+          <!-- 如果有真实二维码图片，取消下面注释并替换图片地址 -->
+          <!-- <img src="你的QQ二维码图片地址.png" alt="QQ二维码" class="qr-image"> -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部 -->
+    <div class="footer">
+      <p class="footer-text">
+        © 2024 Next AI. All rights reserved. | 
+        <a href="https://www.next-ai.asia" class="footer-link">返回首页</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    }
+  </script>
+</body>
+</html>
