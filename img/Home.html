@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Next AI - 稳定的主流大模型网关接口</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      color: #333;
+    }
+    
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* ========== 左侧区域 ========== */
+    .left-section {
+      flex: 1;
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 55%;
+    }
+    
+    .top-badges {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .badge-platform {
+      display: inline-block;
+      padding: 8px 16px;
+      border: 2px solid #22c55e;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #22c55e;
+      letter-spacing: 1px;
+    }
+    
+    .badge-gift {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #22c55e;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .main-title {
+      font-size: 52px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 20px;
+      color: #1a1a1a;
+    }
+    
+    .main-title .highlight {
+      color: #22c55e;
+    }
+    
+    .subtitle {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    
+    /* API地址框 */
+    .api-box {
+      display: flex;
+      align-items: center;
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 25px;
+      max-width: 450px;
+    }
+    
+    .api-label {
+      color: #666;
+      font-size: 14px;
+      margin-right: 10px;
+      white-space: nowrap;
+    }
+    
+    .api-url {
+      flex: 1;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .copy-btn {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .copy-btn:hover {
+      background: #f3f4f6;
+    }
+    
+    /* 按钮组 */
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-game {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #fff;
+    }
+    
+    .btn-game:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
+    }
+    
+    .btn-docs {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff;
+    }
+    
+    .btn-docs:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    }
+    
+    /* 提示文字 */
+    .promo-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #22c55e;
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+    
+    .promo-text .icon {
+      font-size: 18px;
+    }
+    
+    /* 统计数据 */
+    .stats-row {
+      display: flex;
+      gap: 50px;
+    }
+    
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stat-number {
+      font-size: 36px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #888;
+      margin-top: 5px;
+    }
+    
+    /* ========== 右侧代码区域 ========== */
+    .right-section {
+      flex: 1;
+      background: #1e1e1e;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 25px;
+    }
+    
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .control-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    
+    .control-dot.red { background: #ff5f56; }
+    .control-dot.yellow { background: #ffbd2e; }
+    .control-dot.green { background: #27ca3f; }
+    
+    .code-title {
+      color: #888;
+      font-size: 14px;
+    }
+    
+    .code-block {
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #d4d4d4;
+      overflow-x: auto;
+    }
+    
+    .code-block .comment {
+      color: #6a9955;
+    }
+    
+    .code-block .command {
+      color: #569cd6;
+    }
+    
+    .code-block .string {
+      color: #ce9178;
+    }
+    
+    .code-block .key {
+      color: #9cdcfe;
+    }
+    
+    .code-block .symbol {
+      color: #d4d4d4;
+    }
+    
+    .code-block .export {
+      color: #c586c0;
+    }
+    
+    .code-block .url {
+      color: #4ec9b0;
+    }
+    
+    .code-line {
+      margin-bottom: 5px;
+    }
+    
+    /* Toast提示 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #22c55e;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* 响应式 */
+    @media (max-width: 1024px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .left-section {
+        max-width: 100%;
+        padding: 40px 30px;
+      }
+      
+      .right-section {
+        padding: 30px;
+      }
+      
+      .main-title {
+        font-size: 36px;
+      }
+      
+      .button-group {
+        flex-wrap: wrap;
+      }
+      
+      .stats-row {
+        gap: 30px;
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .main-title {
+        font-size: 28px;
+      }
+      
+      .stat-number {
+        font-size: 28px;
+      }
+      
+      .code-block {
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">✓ 已复制到剪贴板</div>
+
+  <div class="container">
+    <!-- 左侧介绍区域 -->
+    <div class="left-section">
+      <div class="top-badges">
+        <span class="badge-platform">AI GATEWAY PLATFORM</span>
+        <span class="badge-gift">🎁 新用户送 $0.2</span>
+      </div>
+
+      <h1 class="main-title">
+        稳定的<span class="highlight">主流大模型</span>网关接口
+      </h1>
+
+      <p class="subtitle">
+        一站接入，只选最新最强模型。少即是多，稳即是值，品质至上。
+      </p>
+
+      <div class="api-box">
+        <span class="api-label">API地址:</span>
+        <span class="api-url" id="apiUrl">https://ai.study-go.eu.org</span>
+        <button class="copy-btn" onclick="copyApiUrl()">
+          📋
+        </button>
+      </div>
+
+      <div class="button-group">
+        <a href="https://ai.study-go.eu.org/register" target="_top" class="btn btn-primary">
+          👤 立即注册 →
+        </a>
+        <a href="https://ai.study-go.eu.org/playground" target="_top" class="btn btn-game">
+          🎮 玩游戏
+        </a>
+        <a href="https://ai.study-go.eu.org/docs" target="_top" class="btn btn-docs">
+          📄 查看文档
+        </a>
+      </div>
+
+      <p class="promo-text">
+        <span class="icon">🎁</span>
+        注册即送 $0.2 体验金，立即开始您的 AI 之旅
+      </p>
+
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-number">1000+</span>
+          <span class="stat-label">注册客户</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">99.9%</span>
+          <span class="stat-label">服务可用性</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">1M+</span>
+          <span class="stat-label">每日请求</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧代码区域 -->
+    <div class="right-section">
+      <div class="code-header">
+        <div class="window-controls">
+          <span class="control-dot red"></span>
+          <span class="control-dot yellow"></span>
+          <span class="control-dot green"></span>
+        </div>
+        <span class="code-title">Claude Code设置</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-line"><span class="comment"># 第一步：配置 settings.json</span></div>
+        <div class="code-line"><span class="command">cat</span> > ~/.claude/settings.json << <span class="string">'EOF'</span></div>
+        <div class="code-line"><span class="symbol">{</span></div>
+        <div class="code-line">  <span class="key">"apiKeyHelper"</span>: <span class="string">"echo sk-your-key"</span>,</div>
+        <div class="code-line">  <span class="key">"anthropicBaseUrl"</span>: <span class="url">"https://ai.study-go.eu.org"</span></div>
+        <div class="code-line"><span class="symbol">}</span></div>
+        <div class="code-line"><span class="string">EOF</span></div>
+        <br>
+        <div class="code-line"><span class="comment"># 第二步：添加环境变量到 .bashrc</span></div>
+        <div class="code-line"><span class="command">cat</span> >> ~/.bashrc << <span class="string">'EOF'</span></div>
+        <div class="code-line"><span class="export">export</span> <span class="key">ANTHROPIC_API_KEY</span>=<span class="string">"sk-your-key"</span></div>
+        <div class="code-line"><span class="export">export</span> <span class="key">ANTHROPIC_BASE_URL</span>=<span class="url">"https://ai.study-go.eu.org"</span></div>
+        <div class="code-line"><span class="string">EOF</span></div>
+        <br>
+        <div class="code-line"><span class="comment"># 第三步：屏蔽统计服务器以防止Claude Code出错</span></div>
+        <div class="code-line"><span class="command">echo</span> <span class="string">"127.0.0.1 statsig.anthropic.com"</span> | <span class="command">sudo</span> tee -a /etc/hosts</div>
+        <br>
+        <div class="code-line"><span class="comment"># 第四步：清理统计缓存</span></div>
+        <div class="code-line"><span class="command">rm</span> -rf ~/.claude/statsig/</div>
+        <br>
+        <div class="code-line"><span class="comment"># 第五步：重载环境变量并启动</span></div>
+        <div class="code-line"><span class="command">source</span> ~/.bashrc && <span class="command">claude</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function copyApiUrl() {
+      const url = document.getElementById('apiUrl').textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast();
+      });
+    }
+    
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
